@@ -1,0 +1,57 @@
+version: "3.9"
+services:
+  init-secrets:
+    image: 0xpolygon/polygon-edge:0.6.3
+    command: [
+      "secrets",
+      "init",
+      "--data-dir",
+      "/data",
+      "--num",
+      "1"
+    ]
+    volumes:
+      - ./polygon-edge/data:/data
+    networks:
+      - polygon-edge
+  init-genesis:
+    image: 0xpolygon/polygon-edge:0.6.3
+    entrypoint: /genesis.sh
+    volumes:
+      - ./polygon-edge/data:/data
+      - ./genesis.sh:/genesis.sh
+    networks:
+      - polygon-edge
+    depends_on:
+      init-secrets:
+        condition: service_completed_successfully
+
+  polygon-edge:
+    image: 0xpolygon/polygon-edge:0.6.3
+    container_name: polygon-edge
+    command: [
+      "server",
+      "--data-dir",
+      "/data",
+      "--chain", "/data/genesis.json",
+      "--grpc-address", "0.0.0.0:9632",
+      "--libp2p", "0.0.0.0:1478",
+      "--jsonrpc", "0.0.0.0:8545",
+      "--prometheus", "0.0.0.0:5001",
+      "--seal"
+    ]
+    depends_on:
+      init-genesis:
+        condition: service_completed_successfully
+    ports:
+      - '10002:9632'
+      - '10001:8545'
+      - '10003:5001'
+    volumes:
+      - ./polygon-edge/data:/data
+    networks:
+      - polygon-edge
+    restart: on-failure
+
+networks:
+  polygon-edge:
