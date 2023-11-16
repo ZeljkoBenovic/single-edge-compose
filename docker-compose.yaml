@@ -17,6 +17,8 @@ services:
   init-genesis:
     image: 0xpolygon/polygon-edge:0.6.3
     entrypoint: /genesis.sh
+    environment:
+      PREMINE_ACC: "0x228466F2C715CbEC05dEAbfAc040ce3619d7CF0B"
     volumes:
       - ./polygon-edge/data:/data
       - ./genesis.sh:/genesis.sh
